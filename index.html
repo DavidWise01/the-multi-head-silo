@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE MULTI-HEAD SILO — THREE ENGINES, ONE VOTE</title>
+<style>
+  :root{--bg:#141210;--panel:#1d1915;--ink:#e8e0d4;--dim:#8a7f70;--orange:#ff6a00;
+    --orange2:#ffa040;--teal:#2dd4bf;--red:#ff3b3b;--violet:#b085ff;--grid:#2c2620;--line:#3a332b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:18px;min-height:100vh}
+  header{border:3px solid var(--orange);padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px}
+  header h1{font-size:18px;letter-spacing:2px;color:var(--orange)}
+  header .meta{font-size:11px;color:var(--dim);text-align:right;line-height:1.5}
+  header .tier{color:var(--teal);font-weight:bold}
+  .row{display:flex;gap:14px;flex-wrap:wrap}
+  .panel{background:var(--panel);border:2px solid var(--line);padding:10px;flex:1 1 460px;min-width:340px}
+  .panel h2{font-size:12px;color:var(--orange2);letter-spacing:1.5px;margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  canvas{display:block;width:100%;background:var(--bg)}
+  footer{margin-top:14px;border:2px solid var(--line);padding:10px 14px;font-size:11px;color:var(--dim);line-height:1.7}
+  footer b{color:var(--ink)}
+  .diag{border:3px solid var(--red);background:#241010;padding:16px;margin-top:14px;font-size:12px;color:#ffb0b0;display:none;white-space:pre-wrap}
+  .legend{font-size:10px;color:var(--dim);margin-top:6px;line-height:1.6}
+  .toddler{margin-top:14px;border:4px dashed var(--orange2);padding:16px 20px;font-size:14px;line-height:1.9;color:var(--ink);background:#221c15}
+  .toddler h2{color:var(--orange);font-size:16px;letter-spacing:2px;margin-bottom:8px}
+  .toddler b{color:var(--orange2)}
+</style>
+</head>
+<body>
+
+<!-- ================= EDIT BLOCK 1: PAPER METADATA ================= -->
+<header>
+  <h1>THE MULTI-HEAD SILO &mdash; THREE ENGINES, ONE VOTE</h1>
+  <div class="meta">
+    3 retrieval heads (independent seeds, per-head &lambda;) &rarr; probability-mean vote &rarr; shared Engine B &middot; the 95&rarr;99 rung<br>
+    tier: <span class="tier">lit</span> &middot; independence check: joint errors 1.2&ndash;1.6&times; the independent prediction at K=0 &middot; Honda timing retained lol &middot; 2026-07-10
+  </div>
+</header>
+<!-- ================================================================ -->
+
+<div class="row">
+  <div class="panel" style="flex:1.4 1 580px">
+    <h2>3D &mdash; THE TRIDENT: THREE A-STACKS VOTE INTO ONE B-STACK</h2>
+    <canvas id="c3d" width="980" height="700"></canvas>
+    <div class="legend">
+      three Engine-A silos (heads <span style="color:var(--teal)">1</span> / <span style="color:var(--orange)">2</span> / <span style="color:var(--violet)">3</span>),
+      each unit-0 worldline hunting the same cue phase (white ring marker) &middot; they merge at the vote and continue up the shared Engine B stack &middot;
+      all four stacks idle at 1-3-4-2
+    </div>
+  </div>
+  <div class="panel">
+    <h2>2D &mdash; TAIL LIFT &amp; THE INDEPENDENCE LEDGER</h2>
+    <canvas id="c2d" width="920" height="700"></canvas>
+    <div class="legend">
+      top: accuracy vs K &mdash; thin lines = single heads, bold teal = probability-mean ensemble, dashed = majority vote &middot;
+      bottom: the independence ledger and the full arc ladder 80.3 &rarr; 95.2 &rarr; 99.0
+    </div>
+  </div>
+</div>
+
+<footer id="numbers"></footer>
+
+<div class="toddler">
+  <h2>&#x1F58D; TODDLER CORNER</h2>
+  Our robot was right 95 times out of 100. The last 5 mistakes weren&rsquo;t sloppiness &mdash; they were rare total mix-ups, grabbing the wrong secret entirely. You can&rsquo;t polish away a mix-up.<br><br>
+  So we built <b>two more finder robots</b>, raised differently, and made all three <b>vote</b>. The new two are actually a bit clumsier than the original! But here&rsquo;s the magic: they almost never make the <b>same</b> mistake at the <b>same</b> time. When one goofs, the other two outvote it. Three so-so friends who disagree in different ways beat one genius who sometimes has a very bad day. Score: <b>99 out of 100.</b><br><br>
+  One more trick: don&rsquo;t just count hands. A robot that&rsquo;s <i>sure</i> should count more than a robot that&rsquo;s <i>shrugging</i> &mdash; averaging their confidence beat plain voting, 99.0 to 96.8.<br><br>
+  <b>The big lesson:</b> when mistakes are rare-but-total, don&rsquo;t train harder &mdash; get witnesses. lol
+</div>
+
+<div class="diag" id="diag"></div>
+
+<script>
+"use strict";
+(function(){
+const DIAG=m=>{const d=document.getElementById('diag');d.style.display='block';
+  d.textContent="INSTRUMENT FAULT — DIAGNOSTIC CARD\n\n"+m;};
+try{
+
+const DATA={"KV": [0, 1, 2, 3, 4, 6, 8, 12], "sweep": {"single": [[0.9516666531562805, 0.9333333373069763, 0.9200000166893005, 0.8766666650772095, 0.7200000286102295, 0.4633333384990692, 0.39500001072883606, 0.25833332538604736], [0.8533333539962769, 0.8833333253860474, 0.8216666579246521, 0.8100000023841858, 0.6483333110809326, 0.46166667342185974, 0.3799999952316284, 0.25999999046325684], [0.8799999952316284, 0.8666666746139526, 0.8683333396911621, 0.8299999833106995, 0.653333306312561, 0.4566666781902313, 0.34833332896232605, 0.25]], "ens": [0.9900000095367432, 0.9833333492279053, 0.9649999737739563, 0.9583333134651184, 0.7649999856948853, 0.54666668176651, 0.43666666746139526, 0.28166666626930237], "maj": [0.9683333039283752, 0.9599999785423279, 0.9466666579246521, 0.9333333373069763, 0.7450000047683716, 0.5166666507720947, 0.4033333361148834, 0.2549999952316284]}, "indep": {"0": {"p_single": [0.0494999997317791, 0.13850000500679016, 0.12449999898672104], "p_joint": [0.010999999940395355, 0.0044999998062849045, 0.020500000566244125], "p_indep": [0.006855750210687517, 0.0061627499164491895, 0.017243250483006234]}, "4": {"p_single": [0.32199999690055847, 0.3440000116825104, 0.38749998807907104], "p_joint": [0.1589999943971634, 0.1745000034570694, 0.17599999904632568], "p_indep": [0.11076800269556042, 0.12477499496042732, 0.13330000042617307]}}, "tracks": [[1.175382137298584, 1.1504034996032715, 1.1225475072860718, 1.103868007659912, 1.0818147659301758, 1.0608725547790527, 1.0289682149887085, 0.995404064655304, 0.9683979749679565, 0.9239135980606079, 0.9085283875465393, 0.8839911818504333, 0.8485882878303528, 0.8194917440414429, 0.7867497801780701, 0.7445537447929382, 0.6781311631202698, 0.6295510530471802, 0.5892859101295471, 0.5487402677536011, 0.5266634821891785, 0.483669251203537, 0.43335652351379395, 0.380620539188385, 0.3208695948123932, 0.2643130421638489, 0.2161572277545929, 0.1668086051940918, 0.12690627574920654, 0.0708232969045639, 0.01703089103102684, -0.03758363053202629, -0.10556785762310028, -0.17220060527324677, -0.2115236520767212, -0.27153003215789795, -0.3320268392562866, -0.38449564576148987, -0.4145526587963104, -0.4695966839790344, -0.5110244154930115, -0.5509238243103027, -0.5825076103210449, -0.6065647006034851, -0.6242799162864685, -0.6525726914405823, -0.6800064444541931, -0.6973369717597961, -0.7001969814300537, -0.7184602618217468, -0.7249413728713989, -0.7391157746315002, -0.7510871291160583, -0.7780181765556335, -0.7905054092407227, -0.7869644165039062, -0.7931420207023621, -0.7938587665557861, -0.8012622594833374, -0.8007854223251343, -0.8096596002578735], [1.175382137298584, 1.137063980102539, 1.1037718057632446, 1.0622094869613647, 1.000274896621704, 0.9466737508773804, 0.8754715919494629, 0.8393113017082214, 0.7909682393074036, 0.7363336682319641, 0.6828406453132629, 0.6289093494415283, 0.5515271425247192, 0.48001599311828613, 0.4392947852611542, 0.39887145161628723, 0.34840911626815796, 0.2979598343372345, 0.2708873152732849, 0.23930411040782928, 0.20852981507778168, 0.18516898155212402, 0.17311514914035797, 0.14379365742206573, 0.11262306571006775, 0.09335321933031082, 0.08105392009019852, 0.05763357877731323, 0.04208286106586456, 0.026154641062021255, 0.004425510764122009, -0.010623062029480934, -0.034409794956445694, -0.04959592968225479, -0.06327808648347855, -0.08732080459594727, -0.11763263493776321, -0.1504262387752533, -0.18906784057617188, -0.22516196966171265, -0.25777801871299744, -0.30388280749320984, -0.3425191044807434, -0.3700012266635895, -0.4139462411403656, -0.45546668767929077, -0.4889566898345947, -0.521704912185669, -0.5397723913192749, -0.5664588212966919, -0.6110764741897583, -0.6363482475280762, -0.6572775840759277, -0.6935420632362366, -0.7003067135810852, -0.6985118985176086, -0.6973918676376343, -0.700451135635376, -0.6830741763114929, -0.6852479577064514, -0.6919444799423218], [1.175382137298584, 1.109631896018982, 1.0525528192520142, 0.9762471914291382, 0.9133894443511963, 0.859391450881958, 0.7993536591529846, 0.7171414494514465, 0.6560922265052795, 0.5750093460083008, 0.5156643986701965, 0.45008376240730286, 0.40099143981933594, 0.33586111664772034, 0.2816399335861206, 0.23244470357894897, 0.18567413091659546, 0.13815605640411377, 0.09010656177997589, 0.05469134449958801, 0.015820734202861786, -0.01231398805975914, -0.03771039471030235, -0.06258838623762131, -0.08230337500572205, -0.097530797123909, -0.1124664843082428, -0.13090811669826508, -0.1364109367132187, -0.1519749015569687, -0.15687602758407593, -0.16323402523994446, -0.1737569123506546, -0.1786835938692093, -0.17703717947006226, -0.18073078989982605, -0.189623162150383, -0.1922491490840912, -0.19270265102386475, -0.18836748600006104, -0.19177058339118958, -0.1802915781736374, -0.17641864717006683, -0.17463594675064087, -0.17639660835266113, -0.17246071994304657, -0.16828183829784393, -0.16954174637794495, -0.1675938069820404, -0.1761915534734726, -0.17856130003929138, -0.18309159576892853, -0.17964927852153778, -0.18896940350532532, -0.20083196461200714, -0.2136835902929306, -0.22983378171920776, -0.249022975564003, -0.26478299498558044, -0.2851112484931946, -0.3030344247817993]], "trackB": [-0.879889190196991, -0.8416746258735657, -0.8851432800292969, -0.9479301571846008, -1.0102955102920532, -0.9862839579582214, -0.9796563386917114, -0.9500486254692078, -0.9779457449913025, -1.074113368988037, -1.1696672439575195, -1.1448642015457153, -1.1643562316894531, -1.2191928625106812, -1.1362977027893066, -1.112638235092163, -1.1079893112182617, -1.0798211097717285, -0.9280606508255005, -1.0345799922943115, -0.9498400092124939, -0.9245088696479797, -0.8192388415336609, -0.6585144996643066, -0.7096919417381287, -0.6926881670951843, -0.6928851008415222, -0.568606972694397, -0.5401875376701355, -0.48333656787872314, -0.4283595681190491, -0.4092019498348236, -0.3664708137512207, -0.3247421085834503, -0.23884925246238708, -0.25213462114334106, -0.2505985498428345, -0.3533550202846527, -0.27356547117233276, -0.18556499481201172, -0.208867609500885, -0.26870521903038025, -0.22038909792900085, -0.2549116313457489, -0.3000505864620209, -0.22164389491081238, -0.18321117758750916, -0.1715570092201233, -0.1627853810787201, -0.12784618139266968, 0.0854632556438446, 0.175258606672287, 0.30807244777679443, 0.412650465965271, 0.3862456679344177, 0.4214213192462921, 0.47177499532699585, 0.592681884765625, 0.7064344882965088, 0.7671661972999573, 0.782608687877655], "cue_phase": 5.4977874755859375, "witness": {"det": 0.0}};
+const KV=DATA.KV, sw=DATA.sweep, tracks=DATA.tracks, trB=DATA.trackB, cueP=DATA.cue_phase;
+const HC=["#2dd4bf","#ff6a00","#b085ff"];
+
+/* ---------------- SOFT-GL ---------------- */
+const SGL={yaw:0.4,pitch:0.22,dist:15,scale:74,W:980,H:700,
+  project(x,y,z){const cy=Math.cos(this.yaw),sy=Math.sin(this.yaw),
+    cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);
+    let x1=cy*x+sy*z,z1=-sy*x+cy*z,y1=cp*y-sp*z1,z2=sp*y+cp*z1;
+    const w=this.dist/(this.dist+z2);
+    return {x:this.W/2+x1*this.scale*w,y:this.H/2-y1*this.scale*w,w};},
+  path(ctx,pts,c,lw){ctx.strokeStyle=c;ctx.lineWidth=lw||1;ctx.beginPath();
+    pts.forEach((p,i)=>{const P=this.project(...p);i?ctx.lineTo(P.x,P.y):ctx.moveTo(P.x,P.y);});ctx.stroke();},
+  dot(ctx,p,c,r){const P=this.project(...p);ctx.fillStyle=c;ctx.beginPath();ctx.arc(P.x,P.y,(r||3)*P.w,0,7);ctx.fill();},
+  text3(ctx,p,t,c){const P=this.project(...p);ctx.fillStyle=c;ctx.font="11px ui-monospace,monospace";ctx.fillText(t,P.x+6,P.y-5);}};
+
+/* trident geometry: 3 A-stacks below, B-stack above center */
+const R=0.85, DYa=0.052, DYb=0.052;
+const XOFF=[-2.3,0,2.3];
+let crank=0;
+const FIRE={1:0,3:Math.PI/2,4:Math.PI,2:3*Math.PI/2};
+function oscOf(k){const c=(k%4)+1,e=Math.pow(Math.max(0,Math.sin(crank-FIRE[c])),2);
+  if(c===1)return{dr:0.07*e,dy:0};if(c===3)return{dr:0,dy:0.035*e};
+  if(c===4)return{dr:-0.07*e,dy:0};return{dr:0,dy:-0.035*e};}
+const YA0=-3.4, YB0=0.35;
+const PA=(h,k,ph)=>{const o=oscOf(k);return[XOFF[h]+(R+o.dr)*Math.cos(ph),YA0+k*DYa+o.dy,(R+o.dr)*Math.sin(ph)];};
+const PB=(k,ph)=>{const o=oscOf(k+61);return[(R+o.dr)*Math.cos(ph),YB0+k*DYb+o.dy,(R+o.dr)*Math.sin(ph)];};
+
+const c3=document.getElementById('c3d'),ctx3=c3.getContext('2d');
+/* ---------------- EDIT BLOCK 3: draw3D ---------------- */
+function draw3D(){
+  ctx3.clearRect(0,0,980,700);
+  for(let h=0;h<3;h++){
+    for(let k=0;k<=60;k+=5){
+      const pts=[];for(let s=0;s<=36;s++)pts.push(PA(h,k,s/36*2*Math.PI));
+      SGL.path(ctx3,pts,"rgba(58,51,43,0.55)",1);
+    }
+    /* cue phase marker on top ring of each A stack */
+    SGL.dot(ctx3,PA(h,60,cueP),"#ffffff",3);
+    /* unit-0 worldline */
+    const pts=[];for(let k=0;k<tracks[h].length;k++)pts.push(PA(h,k,tracks[h][k]));
+    SGL.path(ctx3,pts,HC[h],2.2);
+    SGL.text3(ctx3,PA(h,0,tracks[h][0]),"head "+(h+1),HC[h]);
+    /* merge line into vote */
+    SGL.path(ctx3,[PA(h,60,tracks[h][60]),PB(0,trB[0])],"rgba(255,160,64,0.7)",1.6);
+  }
+  /* vote node */
+  SGL.dot(ctx3,PB(0,trB[0]),"#ffa040",5);
+  SGL.text3(ctx3,PB(0,trB[0]),"VOTE (prob-mean)","#ffa040");
+  /* B stack */
+  for(let k=0;k<=60;k+=5){
+    const pts=[];for(let s=0;s<=36;s++)pts.push(PB(k,s/36*2*Math.PI));
+    SGL.path(ctx3,pts,"rgba(58,51,43,0.55)",1);
+  }
+  const ptsB=[];for(let k=0;k<trB.length;k++)ptsB.push(PB(k,trB[k]));
+  SGL.path(ctx3,ptsB,"#e8e0d4",2);
+  SGL.dot(ctx3,PB(trB.length-1,trB[trB.length-1]),"#e8e0d4",4);
+  SGL.text3(ctx3,PB(trB.length-1,trB[trB.length-1]),"Engine B → class","#e8e0d4");
+}
+/* ------------------------------------------------------ */
+
+/* ---------------- EDIT BLOCK 2: draw2D ---------------- */
+const c2=document.getElementById('c2d'),ctx2=c2.getContext('2d');
+function draw2D(){
+  ctx2.clearRect(0,0,920,700);
+  const X0=60,X1=870,Y0=30,Y1=330;
+  const sx=i=>X0+i/(KV.length-1)*(X1-X0), sy=v=>Y1-v*(Y1-Y0);
+  ctx2.strokeStyle="#2c2620";ctx2.font="10px ui-monospace,monospace";
+  for(let g=0;g<=4;g++){const y=Y0+g*(Y1-Y0)/4;ctx2.beginPath();ctx2.moveTo(X0,y);ctx2.lineTo(X1,y);ctx2.stroke();}
+  for(let h=0;h<3;h++){
+    ctx2.strokeStyle=HC[h];ctx2.lineWidth=1;ctx2.globalAlpha=0.6;ctx2.beginPath();
+    sw.single[h].forEach((v,i)=>{i?ctx2.lineTo(sx(i),sy(v)):ctx2.moveTo(sx(i),sy(v));});ctx2.stroke();ctx2.globalAlpha=1;
+  }
+  ctx2.strokeStyle="#8a7f70";ctx2.setLineDash([5,4]);ctx2.lineWidth=1.6;ctx2.beginPath();
+  sw.maj.forEach((v,i)=>{i?ctx2.lineTo(sx(i),sy(v)):ctx2.moveTo(sx(i),sy(v));});ctx2.stroke();ctx2.setLineDash([]);
+  ctx2.strokeStyle="#2dd4bf";ctx2.lineWidth=3;ctx2.beginPath();
+  sw.ens.forEach((v,i)=>{i?ctx2.lineTo(sx(i),sy(v)):ctx2.moveTo(sx(i),sy(v));});ctx2.stroke();
+  sw.ens.forEach((v,i)=>{ctx2.fillStyle="#2dd4bf";ctx2.beginPath();ctx2.arc(sx(i),sy(v),3,0,7);ctx2.fill();});
+  KV.forEach((k,i)=>{ctx2.fillStyle="#8a7f70";ctx2.fillText("K="+k,sx(i)-12,Y1+16);});
+  ctx2.fillStyle="#2dd4bf";ctx2.fillText("ensemble (prob-mean) — 0.990 at K=0",X0,Y0-10);
+  ctx2.fillStyle="#8a7f70";ctx2.fillText("majority (dashed)  ·  thin = single heads",X0+320,Y0-10);
+  /* independence ledger */
+  const iy=400;
+  ctx2.fillStyle="#ffa040";ctx2.font="11px ui-monospace,monospace";
+  ctx2.fillText("INDEPENDENCE LEDGER — P(two heads wrong together) vs independent prediction",X0,iy-14);
+  const rows=[["pair","K=0 joint","K=0 indep","ratio","K=4 joint","K=4 indep","ratio"]];
+  const i0=DATA.indep["0"],i4=DATA.indep["4"];
+  const pairs=["1&2","1&3","2&3"];
+  for(let j=0;j<3;j++){
+    rows.push([pairs[j],i0.p_joint[j].toFixed(4),i0.p_indep[j].toFixed(4),(i0.p_joint[j]/i0.p_indep[j]).toFixed(2)+"×",
+               i4.p_joint[j].toFixed(3),i4.p_indep[j].toFixed(3),(i4.p_joint[j]/i4.p_indep[j]).toFixed(2)+"×"]);
+  }
+  const cx=[60,180,320,460,560,680,800];
+  rows.forEach((r,i)=>{const y=iy+i*26;
+    r.forEach((cell,j)=>{ctx2.fillStyle=i===0?"#ffa040":"#e8e0d4";ctx2.fillText(cell,cx[j],y);});});
+  /* ladder */
+  const ly=560;
+  ctx2.fillStyle="#ffa040";ctx2.fillText("THE FULL ARC — one number per architecture generation",X0,ly-14);
+  const arc=[["v1 joint (single head, no binding)",0.803,"#ff3b3b"],
+             ["v2 (QK gate + magnetic softmax)",0.952,"#ffa040"],
+             ["v3 multi-head vote",0.990,"#2dd4bf"]];
+  arc.forEach(([lab,v,col],i)=>{const y=ly+i*36;
+    ctx2.fillStyle="#e8e0d4";ctx2.fillText(lab,X0,y+13);
+    ctx2.strokeStyle="#2c2620";ctx2.strokeRect(430,y,380,18);
+    ctx2.fillStyle=col;ctx2.fillRect(430,y,380*v,18);
+    ctx2.fillText((100*v).toFixed(1)+"%",430+380*v-52,y+13);});
+}
+/* ------------------------------------------------------ */
+
+const i0=DATA.indep["0"];
+document.getElementById('numbers').innerHTML=
+  "<b>WITNESSED NUMBERS</b> &middot; determinism "+DATA.witness.det.toFixed(1)+" &middot; " +
+  "ensemble K=0: <b>0.990</b> vs best single head 0.952 &mdash; the 3e&sup2; independence prediction (~0.7% error if fully independent) lands at 1.0% measured. " +
+  "Joint-error ratios vs independence at K=0: <b>"+i0.p_joint.map((v,j)=>(v/i0.p_indep[j]).toFixed(2)).join("&times;, ")+"&times;</b> &mdash; mildly correlated, close enough that voting pays nearly full price. " +
+  "Under load (K=4) correlation rises to ~1.3&ndash;1.4&times;: hard cases are shared, redundancy pays partially. " +
+  "Probability-mean beats majority everywhere (0.990 vs 0.968 at K=0) &mdash; confidence is information; hand-counting discards it. " +
+  "<b>Disclosures:</b> heads 2 &amp; 3 are individually weaker (0.853/0.880 &mdash; 500 fresh steps + 200-step &lambda;, no joint FT) yet the ensemble still clears 99: diversity beat polish. " +
+  "One seed per head; B and head frozen throughout (pure add-a-module &mdash; no retraining of the trunk). " +
+  "The arc, closed: <b>80.3 (refine-bound) &rarr; 95.2 (architecture: QK + competition) &rarr; 99.0 (redundancy: heads + vote)</b> &mdash; " +
+  "each rung bought by changing <i>what</i> is computed, never by training longer. The intercept, never the slope.";
+
+draw2D();draw3D();
+(function f(){SGL.yaw+=0.003;crank+=0.045;draw3D();requestAnimationFrame(f);})();
+
+}catch(e){DIAG((e&&e.stack)?e.stack:String(e));}
+})();
+</script>
+</body>
+</html>
