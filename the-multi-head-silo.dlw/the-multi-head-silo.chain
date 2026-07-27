@@ -2,8 +2,8 @@ ROOT0-DLW-CHAIN-v1
 index : 1214
 slug  : the-multi-head-silo
 seal  : f3ed2e223191230a9040704e92061202db18f6272c439dd6c4a8a88f681eaad4
-prev  : 086bdd70f244c61d88c14509bce8e1ecf93ab5b0dc38e0a573a149dee87c81f3
-link  : 1ce885160a6e5bdfaa3dc76cbea8de4266a5992e766fc702393185c3572f9861
-head  : f235a2d0c56b49a77eb8a348b56b8845b7515e8743b25fd4b56b32ac175886ef
+prev  : 8db22ab6aab6cfbb32f97d9999af76bbb3f31fcd958fdb78b60087124b334123
+link  : 6ae29dcdabbcb89942a24a1429e25b81b3bf94d728d94a961a698688644deaba
+head  : c4d41afeaef76470528856d54d86cf480a0e1c2fc8ebc60fbb9eb8e442585f2b
 
 — the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
